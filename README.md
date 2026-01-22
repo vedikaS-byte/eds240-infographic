@@ -26,3 +26,7 @@ The file structure is provided below:
 ├── LICENSE
 └── README.md
 ```
+
+## Data Access
+
+The visual analysis draws on publicly available data from the [*Spotify Music Dataset*](https://www.kaggle.com/datasets/solomonameh/spotify-music-dataset) by Solomon Ameh, accessed via Kaggle.

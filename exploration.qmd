@@ -48,7 +48,7 @@ hist(spotify_clean$track_popularity)
 ```
 
 ```{r}
-# Bin popularity based on dividing scores into three equally sized popularity groups using distribution of popularity values 
+# Bin popularity based on dividing scores into three equally sized popularity groups using distribution of popularity values (every 33%)
 quantile(spotify_clean$track_popularity, probs = c(0, .33, .66, 1))
 
 # Establish grouping based onn quantile (in thirds) cutoff
@@ -64,9 +64,9 @@ spotify_clean <- spotify_clean %>%
 
 ### **Exploratory Data Visualizations**
 
-The following visualizations were created to observe trends in the Spotify data based on
+The following visualizations were created to observe trends in several components that may contribute to the popularity of Spotify hits such as: emotional enjoyment, certain combinations of energetic and danceability of tracks, and popular genres.
 
-#### Are hit songs happier? 
+#### Are hit songs happier?
 
 ```{r}
 # Create a summary table for distribution of valence score based on popularity 
@@ -79,10 +79,9 @@ valence_dist <- spotify_clean %>%
 valence_dist %>% 
   ggplot(aes(x = popularity_group, y = valence, fill = popularity_group)) +
   geom_violin(trim = F, alpha = 0.3) +
-  geom_boxplot(width = .1, outlier.shape = NA)+
+  geom_boxplot(width = .1)+
   labs(
     title = "Are Hit Songs Happier?",
-    subtitle = "Valence distributions across popularity groups",
     x = "Popularity Group",
     y = "Valence (Happiness Score)"
   ) + guides(fill = "none") + 
@@ -147,7 +146,7 @@ energy_dance_df %>%
   theme_igray()
 ```
 
-```{r}
+```{r, fig.width=8, fig.height= 6}
 # Faceted density plot of energy-dancebility clustering based on popularity
 energy_dance_df %>% 
   ggplot(aes(x = energy, y = danceability)) +
@@ -161,7 +160,7 @@ energy_dance_df %>%
   theme_igray()
 ```
 
-#### Which genre dominates Spotify hits? 
+#### Which genre dominates Spotify hits?
 
 ```{r}
 # Calcuate proportion of popular songs in each genre
@@ -182,12 +181,18 @@ genre_hits %>% ggplot(aes(x = reorder(playlist_genre, percent_hit_genre), y = pe
   theme_igray()
 ```
 
-### **Answer questions**
+### **EDA Questions**
 
 **After completing the above steps, answer the following questions:**
 
 -   **1.** What have you learned about your data? Have any potentially interesting patterns emerged? Point to specific visualizations that you created as you describe your findings.
 
+Based on exploratory data visualization, there is no visually significant difference in the median valence (emotion happiness) scores across different popularity groups. As observed in the overlayed violin and box plot, most hit songs do not appear to be necessarily happier than less popular ones, as the median score remains approximately the same at about 0.5 regardless of success. This may suggest that "highly popular" songs on Spotify feature the same diverse mix of happy and "sad" tones as in any of the other popularity groups, indicating that a song's emotional mood does not determine its success. The faceted and stacked histograms reveal that valence scores are widely distributed across the entire emotional range for all popularity groups with the highest frequency of songs clustering around the neutral scoring of 0.4-0.5. Because the distribution shape is rather consistent across the high, mid, and lower popularity groups, it is visually clear that a track's specific happiness level does not dictate/impact its commercial success on Spotify (ex. streaming success).
+
+The visual analysis of energy and danceability reveals that while tracks on Spotify lean towards high intensity and rhythmic patterns, high popularity hits are much more concentrated within a specific, tighter range. As indicated in the scatterplots and density plot, the most successful songs cluster tightly around a score of 0.7-0.8 for both metrics, suggesting there may be a standardized formula for commercial appeal in the music industry that favors energetic and danceable tracks. In contrast, low-popular tracks were more scattered and occupied a wider variety of energy and danceability combinations; less popular hits had low energetic scores of 0 and generally low danceability. Overall, there is a clear weak positive correlation between energy and danceability across all popularity groups; however, as popularity increases, the diversity of energetic-danceability pairs decrease in favor of a predictable high-energy rhythm.
+
 -   **2.** In [FPM #1](https://eds-240-data-viz.github.io/course-materials/assignments/FPM1.html), you outlined some questions that you wanted to answer using these data. Have you made any strides towards answering those questions? If yes, how so? If no, what next steps do you need to take (e.g. I need to create X plot type, I still need to track down Y data, I need to restructure existing data so that you can visualize it in Z ways, etc.)? Have any new questions emerged?
+
+The exploratory data visualizations produced in this document briefly address the questions of whether popular songs cluster around certain energy-danceability combinations and which genres are prominent in the most popular group of Spotify hits. Based on the
 
 -   **3.** What challenges do you foresee encountering with your data? These can be data wrangling and / or visualization challenges.

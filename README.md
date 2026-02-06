@@ -7,7 +7,7 @@ This repository contains the data and R code used to create an infographic compo
 Questions currently brainstormed for the analysis include:
 
 -   Are hit songs happier (based on valence)?
-
+- 
 -   Do popular songs cluster around certain energy-danceability combinations?
 
 -   Which genres dominate Spotify hits? Essentially, how does genre composition differ between popular and less popular tracks?

@@ -16,5 +16,5 @@ low_popular <- read.csv(here::here("data", "low_popularity_spotify_data.csv"))
 
 -   Are hit songs happier (based on valence)?
 -   Do popular songs cluster around certain energy-danceability combinations? (Energy vs Danceability), alpha for density
--   Which genres dominate Spotify hits? (how does genre composition differ between popular and less popular tracks?)... use playlist_genre... genre distribution
--   Who dominates Spotify’s most popular songs? (who dominates Spotify’s most popular songs compared to less popular tracks?)
+-   Which genres dominate Spotify hits? (how does genre composition differ among popular tracks?)... use playlist_genre... genre distribution
+-   Who dominates Spotify’s most popular songs? (who dominates Spotify’s most popular songs)

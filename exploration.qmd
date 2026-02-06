@@ -51,6 +51,7 @@ hist(spotify_clean$track_popularity)
 # Bin popularity based on dividing scores into three equally sized popularity groups using distribution of popularity values 
 quantile(spotify_clean$track_popularity, probs = c(0, .33, .66, 1))
 
+# Establish grouping based onn quantile (in thirds) cutoff
 spotify_clean <- spotify_clean %>%
   mutate(
     popularity_group = case_when(
@@ -63,7 +64,7 @@ spotify_clean <- spotify_clean %>%
 
 ### **Exploratory Data Visualizations**
 
--   Create at least **three** exploratory data visualizations (but of course feel free to create more!). The goal of these visualizations is to explore your data for any potentially interesting patterns or trends, which you or may not decide to pursue further as you iterate on your final project deliverable. These plots *do not* need to be polished (e.g. updated theme), but it may be helpful to try arranging data to identify any trends. **NOTE:** You may need to create differently arranged subsets of your data in order to produce your various exploratory data visualizations.
+The following visualizations were created to observe trends in the Spotify data based on
 
 #### Are hit songs happier? 
 
@@ -144,7 +145,9 @@ energy_dance_df %>%
     color = "Popularity Group"
   ) +
   theme_igray()
+```
 
+```{r}
 # Faceted density plot of energy-dancebility clustering based on popularity
 energy_dance_df %>% 
   ggplot(aes(x = energy, y = danceability)) +
@@ -156,29 +159,30 @@ energy_dance_df %>%
     y = "Danceability"
   ) +
   theme_igray()
-
 ```
 
 #### Which genre dominates Spotify hits? 
 
 ```{r}
+# Calcuate proportion of popular songs in each genre
 genre_hits <- spotify_clean %>%
   filter(popularity_group == "High Popularity") %>%
-  count(playlist_genre) %>%
-  mutate(percent_hit_genre = n / sum(n))
+  count(playlist_genre) %>% # Count how many popular songs in each genre
+  mutate(percent_hit_genre = n / sum(n) * 100)  # Calculate % of highly popular songs in each genre... double check that it adds to 100% (it does!)
 
+# Horizontal ranked bar chart 
 genre_hits %>% ggplot(aes(x = reorder(playlist_genre, percent_hit_genre), y = percent_hit_genre)) +
   geom_col(alpha = .7) +
   coord_flip() +
   labs(
-    title = "Genres That Dominate High-Popularity Songs",
+    title = "Genres That Dominate High Popularity Songs",
     x = "Genre",
-    y = "Proportion of Hit Songs"
+    y = "Proportion of Hit Songs (%)"
   ) +
   theme_igray()
 ```
 
-### **V. Answer questions**
+### **Answer questions**
 
 **After completing the above steps, answer the following questions:**
 

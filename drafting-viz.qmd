@@ -1,0 +1,90 @@
+---
+title: "drafting-viz"
+format: html
+---
+
+
+
+
+```{r}
+# Calculate: What % of songs IN THIS GENRE are hits?
+genre_hits %>%
+  ggplot(aes(x = reorder(playlist_genre, percent_hit_genre), y = percent_hit_genre)) +
+  # Draw the "stick"
+  geom_segment(aes(xend = reorder(playlist_genre, percent_hit_genre), yend = 0), color = "grey50") +
+  # Draw the "candy"
+  geom_point(size = 4, color = "#1DB954") + # Spotify green
+  coord_flip() +
+  labs(title = "Lollipop: Genre Dominance in Hits", x = "", y = "Share of Total Hits (%)") +
+  theme_minimal()
+```
+```{r}
+library(ggplot2)
+library(ggthemes)
+
+# spotify_clean %>%
+#   ggplot(aes(x = energy, y = danceability)) +
+#   # Use filled density to see peaks clearly
+#   geom_density_2d_filled(alpha = 0.8) + 
+#   facet_wrap(~popularity_group) +
+#   labs(
+#     title = "Where do popular songs live?",
+#     subtitle = "Higher density areas indicate song clusters",
+#     x = "Energy",
+#     y = "Danceability",
+#     fill = "Density Level"
+#   ) +
+#   theme_minimal() +
+#   theme(legend.position = "bottom")
+
+# Of all the songs within a single genre, what percentage are hits? If a song is released in a specific genre, what are the odds (percent chance) that it will become a High Popularity hit? **Which genres are best at pushing their hits into the top 33% of Spotify's most popular songs?**
+spotify_clean %>%
+  count(playlist_genre, popularity_group) %>%
+  group_by(playlist_genre) %>%
+  mutate(prop = n / sum(n) * 100) %>%
+  ggplot(aes(x = prop, y = reorder(playlist_genre, prop), color = popularity_group)) +
+  # Add a dashed reference line at the 33.3% mark
+  geom_vline(xintercept = 33.3, linetype = "dashed", color = "red", alpha = 0.5) +
+  geom_line(aes(group = playlist_genre), color = "grey") + 
+  geom_point(size = 3) +
+  labs(
+    title = "Genre Success of Spotify's Popular Songs into Top-Tier Hits",
+    subtitle = "Dashed line indicates expected 33% distribution",
+    x = "Percentage of Genre's Songs (%)", 
+    y = "",
+    caption = "Data: Solomon Ameh's 'Spotify Music Dataset' obtained from Kaggle.",
+    color = "Popularity Tier"
+  ) +
+  theme_calc()
+
+
+## Are the highest-popularity tier tracks generally happier? 
+# Calculate the mean valence for each group to add as a reference line
+valence_means <- spotify_clean %>%
+  group_by(popularity_group) %>%
+  summarise(mean_val = mean(valence, na.rm = TRUE))
+
+spotify_clean %>%
+  ggplot(aes(x = valence, fill = popularity_group)) +
+  # Overlaid density with transparency
+  geom_density(alpha = 0.4, color = "white") +
+  # Add vertical lines for the means of each group
+  geom_vline(data = valence_means, aes(xintercept = mean_val, color = popularity_group), 
+             linetype = "dashed", size = 1, show.legend = FALSE) +
+  scale_fill_manual(values = c("High Popularity" = "#E41A1C", 
+                                "Mid Popularity" = "#377EB8", 
+                                "Lower Popularity" = "#4DAF4A")) +
+  scale_color_manual(values = c("High Popularity" = "#E41A1C", 
+                                 "Mid Popularity" = "#377EB8", 
+                                 "Lower Popularity" = "#4DAF4A")) +
+  labs(
+    title = "The Happiness Profile of Hits",
+    subtitle = "Dashed lines represent the mean valence for each popularity tier",
+    x = "Valence Score (0 = Sad, 1 = Happy)",
+    y = "Density",
+    fill = "Popularity Group"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+

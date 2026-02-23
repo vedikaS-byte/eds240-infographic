@@ -23,45 +23,41 @@ library(ggthemes)
 # Import most popular songs
 high_popular <- read.csv(
   here::here("data", "high_popularity_spotify_data.csv"))
+
+low_popular <- read.csv(
+  here::here("data", "low_popularity_spotify_data.csv"))
 ```
 
 The dataset is filtered to retain only variables relevant to answer each question, ensuring a focused and efficient visualization workflow.
 
 ```{r}
-# Select variables relevant to the analysis and double check for duplicates of the same track
-spotify_clean <- high_popular %>% 
-  select( track_id, track_name, track_artist,
-    playlist_genre, playlist_subgenre,
-    track_popularity,
-    valence, energy, danceability) %>% 
-  distinct() %>% # Remove duplicates
-drop_na()
+# Combine high and low popularity songs
+low_popular$popularity_group <- "low"
+high_popular$popularity_group <- "high"
+
+spotify_clean <- bind_rows(low_popular, high_popular)
+
+# Select variables relevant to the analysis
+spotify_clean <- spotify_clean %>%
+  select(track_id, track_name, track_artist,
+         playlist_genre, playlist_subgenre,
+         track_popularity, popularity_group,
+         valence, energy, danceability) %>%
+  distinct() %>%        # Remove duplicate rows
+  drop_na()             # Remove rows with missing values
+
+spotify_clean <- spotify_clean %>% mutate(popularity_group = factor(popularity_group, levels = c("low", "high")))
 ```
 
 Because the research questions utilized to construct this infographic emphasize popularity, songs are classified into popularity groups to streamline faceted visualization. It is important to note that popularity bins were defined based on this author’s judgment and may be revised following further discussion with the instructor.
 
 ```{r}
-# Range of 68-100%
+# Range of 11-100%
 # summary() reveals that there is clustering and heavy skew towards lower range of values
 summary(spotify_clean$track_popularity)
 
 # Visualize right skew
 hist(spotify_clean$track_popularity)
-```
-
-```{r}
-# Bin popularity based on dividing scores into three equally sized popularity groups using distribution of popularity values (every 33%)
-quantile(spotify_clean$track_popularity, probs = c(0, .33, .66, 1))
-
-# Establish grouping based on quantile (in thirds) cutoff
-spotify_clean <- spotify_clean %>%
-  mutate(
-    popularity_group = case_when(
-      track_popularity <= 72 ~ "Lower Tier",
-      track_popularity <= 77 ~ "Middle Tier",
-      TRUE ~ "High Tier"
-    )
-  )
 ```
 
 ### **Exploratory Data Visualizations**
@@ -72,22 +68,29 @@ The following visualizations were created to observe trends in several component
 
 ```{r}
 # Create a summary table for distribution of valence score based on popularity 
-valence_dist <- spotify_clean %>% 
-  select(popularity_group, valence)
+valence_dist <- spotify_clean %>%
+  select(popularity_group, valence) %>%
+  distinct()
 ```
 
-```{r}
+```{r, fig.width = 10, fig.height=5}
 # Violin and boxplot overlaid to visualize distribution
-valence_dist %>% 
+valence_dist %>%
   ggplot(aes(x = popularity_group, y = valence, fill = popularity_group)) +
-  geom_violin(trim = F, alpha = 0.3) +
-  geom_boxplot(width = .1)+
+  geom_violin(trim = T, alpha = 0.3) + 
+  geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) +
+  # scale_fill_manual(values = c("low" = "#a8dadc", "high" = "#e63946")) +
   labs(
     title = "Are Hit Songs Happier?",
     x = "Popularity Group",
     y = "Valence (Happiness Score)"
-  ) + guides(fill = "none") + 
-  theme_igray()
+  ) +
+  guides(fill = "none") +
+  theme_minimal() + # Spotify green + dark background
+scale_fill_manual(values = c("low" = "#535353", "high" = "#1DB954"))+ 
+  annotate("text", x = 1.8, y = .5,
+  label = "Hit songs skew\nslightly happier -->",
+  color = "#1DB954", size = 4, fontface = "italic", hjust = 1)
 ```
 
 ```{r}
@@ -117,6 +120,22 @@ valence_dist %>%
 #### Do popular songs cluster around certain energy-danceability combinations?
 
 ```{r}
+ggplot(spotify_clean, aes(x = energy, y = danceability, color = popularity_group)) +
+  geom_point(alpha = 0.3, size = 1.2) +
+  geom_density_2d(aes(linetype = popularity_group), linewidth = 0.6) +
+ # scale_color_manual(values = cols) +
+  labs(
+    title = "Energy vs. Danceability by Popularity",
+    x = "Energy", y = "Danceability",
+    color = "Group", linetype = "Group"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+
+
 # Create a subset with only the energy and daceability score
 energy_dance_df <- spotify_clean %>%
   select(energy, danceability, popularity_group)
@@ -162,25 +181,82 @@ energy_dance_df %>%
   theme_igray()
 ```
 
-#### Which genre dominates Spotify hits?
+#### How does genre popularity shift between low and high popularity songs?
 
 ```{r}
-# Calcuate proportion of popular songs in each genre
-genre_hits <- spotify_clean %>%
-  filter(popularity_group == "High Popularity") %>%
-  count(playlist_genre) %>% # Count how many popular songs in each genre
-  mutate(percent_hit_genre = n / sum(n) * 100)  # Calculate % of highly popular songs in each genre... double check that it adds to 100% (it does!)
+library(ggimage)
+# genre_icons <- c(
+#   "pop" = "♪",
+#   "rock" = "♫",
+#   "hip-hop" = "♩",
+#   "latin" = "♪",
+#   "electronic" = "♫",
+#   "arabic" = "♩",
+#   "ambient" = "♪",
+#   "brazilian" = "♫",
+#   "world" = "♩",
+#   "lofi" = "♪"
+# )
 
-# Horizontal ranked bar chart 
-genre_hits %>% ggplot(aes(x = reorder(playlist_genre, percent_hit_genre), y = percent_hit_genre)) +
-  geom_col(alpha = .7) +
-  coord_flip() +
+
+# subset
+genre_pct <- spotify_clean %>%
+  count(playlist_genre, popularity_group) %>%
+  group_by(playlist_genre) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  ungroup() %>%
+  filter(popularity_group == "high")  # keep only high popularity %
+
+# Filter to genres with enough songs to be meaningful
+top_genres <- spotify_clean %>%
+  count(playlist_genre) %>%
+  filter(n >= 50) %>%
+  slice_max(n, n = 10) %>%
+  pull(playlist_genre)
+
+genre_pct_filtered <- genre_pct %>%
+  filter(playlist_genre %in% top_genres)
+
+# Step 2: add icon column to your data
+genre_pct_filtered <- genre_pct_filtered %>%
+  mutate(icon_path = case_when(
+    playlist_genre == "pop"       ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-pop-music-24.png",
+    playlist_genre == "rock"      ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-rock-music-50.png",
+    playlist_genre == "hip-hop"   ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-hip-hop-64.png",
+    playlist_genre == "latin"     ~ "~/MEDS/eds-240/eds240-infographic/icons/latin.png",
+    playlist_genre == "electronic"~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-electronic-music-48.png",
+    playlist_genre == "arabic"    ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-lute-24.png",
+    playlist_genre == "ambient"   ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-contrast-64.png",
+    playlist_genre == "brazilian" ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-dancing-64.png",
+    playlist_genre == "world"     ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-world-48.png",
+    playlist_genre == "lofi"      ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-ko-fi-48.png"
+  ))
+
+
+# Step 3: replace geom_point with geom_text
+genre_pct_filtered %>%
+  ggplot(aes(x = pct, y = reorder(playlist_genre, pct))) +
+  geom_segment(aes(x = 0, xend = pct, yend = playlist_genre),
+               color = "grey70", linewidth = 0.8) +
+  geom_image(aes(image = icon_path), size = 0.08, asp = 10/11) +  # adjust size as needed
+  geom_vline(xintercept = 50, linetype = "dashed",
+             color = "grey40", linewidth = 0.5) +
+  annotate("text", x = 51, y = 10.5,
+           label = "50% threshold", color = "grey40", size = 3, hjust = 0) +
+  scale_x_continuous(labels = scales::percent_format(scale = 1),
+                     limits = c(0, 100)) +
   labs(
-    title = "Genres That Dominate High Popularity Songs",
-    x = "Genre",
-    y = "Proportion of Hit Songs (%)"
+    title = "Which Genres Are Most Likely to Produce a Hit?",
+    subtitle = "% of each genre's songs that are high popularity",
+    x = "% of Genre's Songs That Are Hits",
+    y = NULL
   ) +
-  theme_igray()
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    plot.subtitle = element_text(color = "grey50", size = 11),
+    panel.grid.major.y = element_blank()
+  )
 ```
 
 ### **EDA Questions**

@@ -47,12 +47,12 @@ spotify_clean <- spotify_clean %>%
   drop_na()             # Remove rows with missing values
 
 # Reorder popularity levels
-spotify_clean <- spotify_clean %>% 
-  mutate(popularity_group = 
+spotify_clean <- spotify_clean %>%
+  mutate(popularity_group =
            factor(popularity_group, levels = c("low", "high")))
 ```
 
-### **Pre-planning: Restating Infographic Objectives**
+## **Pre-planning: Restating infographic objectives**
 
 **1.** Restate the questions you hope to answer with your inforgraphic. This should include *one overarching question* (think of this as driving the overall theme of your infographic) and *at least three subquestions* (each of which will be addressed by your infographic’s component visualizations). Have these questions changed at all since FPM #1? If yes, how so?
 
@@ -247,14 +247,22 @@ genre_pct %>%
   )
 ```
 
-### **Draft Visualization Questions**
+## **Draft Visualization Questions**
 
 **After completing the above steps, answer the following questions:**
 
 **1.** What are the key insights you want your infographic to communicate, and how will your design choices help highlight and support those messages?
 
+The main insight I wish for my infographic to communicate is that hit songs share identifiable patterns in both their emotional qualities and genre distribution rather than becoming popular at random. To highlight this, I use a density contour plot of energy vs danceability to show whether hit songs cluster in specific regions of a "vibe zone" compared to non-hits, emphasizing overall patterns rather than individual tracks. I also use a lollipop chart to display the percentage of high-popularity songs across genres to clearly outline which genres are most likely to produce hits. I also incorporate emotional enjoyment to gauge whether a song's emotional quality influences its popularity among listeners. I chose design choices such as using Spotify's signature black and green theme as a color palette to represent each popularity group. I will also incorporate labeling and annotating certain plots, such as annotating the low density cluster of low-popularity song in the energy-density association.
+
 **2.** What challenges did you encounter or anticipate encountering as you continue to build / iterate on your visualizations in R? If you struggled with mocking up any of your three visualizations, describe those challenges here.
+
+One challenge I encountered was figuring out how to incorporate icons to represent each genre in the lollipop chart, as adding visual elements beyond basic shapes in R required additional packages and considerations. I also anticipate challenges with annotating each visualization effectively, as I would like to add explanatory text directly to the graphs and need to learn how to do this cleanly and consistently across multiple plots without causing overlap with
 
 **3.** What ggplot extension tools / packages do you need to use to build your visualizations? Are there any that we haven’t covered in class that you’ll be learning how to use for your visualizations?
 
+To build my visualizations, I primarily use `ggplot2` along with extension tools (ex. `ggtheme`) that enhance labeling and design. I plan to further develop my use of `ggimage` to add icons or images, such as adding musical symbols to my other graphs. I also need to improve my use of `geom_text()` and `annotate()` to add clear, informative annotations that strengthen the storytelling of each visualization.
+
 **4.** What feedback do you need from the instructional team and / or your peers to ensure that your intended message and key insights are clear?
+
+I would like feedback on whether my visualizations clearly communicate the intended comparisons between hit and non-hit songs, particularly in terms of energy, danceability, and genre patterns. More specifically, I would like feedback on whether using a density contour plot is an effective way to highlight energy–danceability clusters between the two popularity groups.

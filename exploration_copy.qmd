@@ -1,14 +1,14 @@
 ---
-title: "Early Data Exploration & Visualization of a Spotify Hit"
+title: "Drafting Visualizations: The Anatomy of a Spotify Hit"
 author: "Vedika Shirtekar"
-date: "1/5/2026"
+date: "2/23/2026"
 format: pdf
 execute: 
   warning: false
   message: false
 ---
 
-The purpose of this document is to detail exploratory data exploration and visualization of the primary Spotify hits dataset obtained from Kaggle and organized by Solomon Ameh. Final versions of summarized data and visualizations are subject to change.
+The purpose of this document is to draft proposed visuals for this infographic based on the Spotify hits dataset obtained from Kaggle and organized by Solomon Ameh. Final versions of summarized data and visualizations are subject to change.
 
 ### **Import & Wrangle Data**
 
@@ -28,7 +28,7 @@ low_popular <- read.csv(
   here::here("data", "low_popularity_spotify_data.csv"))
 ```
 
-The dataset is filtered to retain only variables relevant to answer each question, ensuring a focused and efficient visualization workflow.
+The dataset is filtered to retain only variables relevant to answer each question, ensuring a focused and efficient visualization workflow. Additionally, popularity groups were assigned based on each original popularity dataset prior to merging and creating `spotify_clean`.
 
 ```{r}
 # Combine high and low popularity songs
@@ -39,35 +39,76 @@ spotify_clean <- bind_rows(low_popular, high_popular)
 
 # Select variables relevant to the analysis
 spotify_clean <- spotify_clean %>%
-  select(track_id, track_name, track_artist,
-         playlist_genre, playlist_subgenre,
+  select(track_id, track_name, 
+         playlist_genre, 
          track_popularity, popularity_group,
          valence, energy, danceability) %>%
   distinct() %>%        # Remove duplicate rows
   drop_na()             # Remove rows with missing values
 
-spotify_clean <- spotify_clean %>% mutate(popularity_group = factor(popularity_group, levels = c("low", "high")))
+# Reorder popularity levels
+spotify_clean <- spotify_clean %>% 
+  mutate(popularity_group = 
+           factor(popularity_group, levels = c("low", "high")))
 ```
 
-Because the research questions utilized to construct this infographic emphasize popularity, songs are classified into popularity groups to streamline faceted visualization. It is important to note that popularity bins were defined based on this author’s judgment and may be revised following further discussion with the instructor.
+### **Pre-planning: Restating Infographic Objectives**
 
-```{r}
-# Range of 11-100%
-# summary() reveals that there is clustering and heavy skew towards lower range of values
-summary(spotify_clean$track_popularity)
+**1.** Restate the questions you hope to answer with your inforgraphic. This should include *one overarching question* (think of this as driving the overall theme of your infographic) and *at least three subquestions* (each of which will be addressed by your infographic’s component visualizations). Have these questions changed at all since FPM #1? If yes, how so?
 
-# Visualize right skew
-hist(spotify_clean$track_popularity)
-```
+-   This infographic aims to explore the audio and genre characteristics that distinguish high popularity songs from low popularity songs on Spotify. Essentially, the goal is to identify patterns that explictly define a "hit". The overarching question in mind is: What makes a song a Spotify hit? This will be addressed with three subquestions:
 
-### **Exploratory Data Visualizations**
+    -   Are hits emotionally different from non-hits?
+
+    -   Do hit songs have a signature sound based on certain energy-danceability combinations?
+
+    -   Which genres are most likely to produce a hit?
+
+-   Both the first and second subquestions have changed. Originally, my first subquestion was framed as "are hit songs happier?", which implied a yes/no answer. I reframed this approach to focus on emotion difference between the two popularity groups (high vs low popularity) more broadly to better reflect what the valence (emotional) distribution actually shows. The second question was also initially one-sided which asked only whether popular songs cluster in the energy-danceability space. I refined this question to explicitly compare high and low popularity groups since I wanted to specifically determine WHERE hits cluster compared to non-hits.
+
+**2.** Explain which variables from your data set(s) you will use to answer the above questions, and how.
+
+The analysis uses `track_popularity` as the primary variable to define two groups: high popularity (scored 68-100) and low popularity (scored 11-68). These thresholds were established by Ameh in the original dataset, where songs were pre-classified into separate high and low popularity subsets before being combined for this analysis. These two groups serve as the basis for all three subquestion comparisons.
+
+-   Are hit songs emotionally different from non-hits?
+
+    -   `valence` (emotional enjoyment) is the primary variable used for this subquestion. Valence is defined as a measure of musical positiveness on a scale of 0-1. Higher valence indicates a happier and more enjoyable sound while lower valence indicates a sadder and more negative sound. A violin plot overlaid with a boxplot compares the full distribution of valence scores between high and low popularity groups to showcase both the shape of the distribution and the median difference.
+
+-   Do hit songs have a signature sound based on energy and dancability scoring?
+
+    -   Both `energy` and `danceability` are used together as a 2D space to observe potential clustering or close relationships between the two popularity groups. Energy measures how intense and active a song is on a 0-1 scale, while danceability measures how suitable a track is for dancing based on tempo, rhythm stability, and beat strength. A 2D density contour plot was chosen to represent both popularity groups in this space, revealing where each group concentrates and highlighting a distinct zone of high energy and high danceability for Spotify hits.
+
+-   Which genres are most likely to produce a hit?
+
+    -   `playlist_genre` and `popularity_group` are used together for this subquestion, where playlist_genre details the specific genre a song is grouped under by Spotify. For each genre, the percentage of songs that fall into the high popularity group is calculated. A lollipop plot was chosen to display the hit rate of the top 10 genres by total song count, ranked from highest to lowest. Hit rate was calculated as the percentage of each genre's songs that fall into the high popularity group.
+
+**3.** In [FPM #2](https://eds-240-data-viz.github.io/course-materials/assignments/FPM2.html), you created some exploratory data viz to better understand your data. You may already have some ideas of how you plan to formally visualize your data, but it’s *incredibly* helpful to look at visualizations by other creators for inspiration. Find *at least two* data visualizations that you could (potentially) borrow / adapt pieces from. Download and embed them into your `drafting-viz.qmd` file, and explain which elements you might borrow (e.g. the graphic form, legend design, layout, etc.).
+
+[![Figure 1. Facetted lollipop plot for multiple groups. Image courtesy of Data to Viz.](images/lollipop-example.png)](https://www.data-to-viz.com/graph/lollipop.html)
+
+For my third subquestion, I am considering breaking the highest and lowest popularity genres into faceted groups to better compare the most and least popular categories. Although I may decide not to pursue this idea, the author’s use of faceted lollipop charts by group tells a compelling story that I could potentially adapt for my own visualization.
+
+[![Figure 2. Lollipop chart with labelled points for percent reference. Image courtesy of UC Business Analytics R Programming Guide.](images/clipboard-4103021983.png)](https://uc-r.github.io/lollipop)
+
+Based on the lollipop chart above, I was interested in applying a similar labeling style by displaying the percentage value at each point. While my lollipop plot of the top 10 most popular genres is expected to show considerable variation, labeling each point helps clarify small differences in popularity between groups and prevents low-ranking genres from appearing as though they have zero popularity.
+
+[![Figure 3. Scatterplot with ellipses. Image courtesy of R Charts.](images/clipboard-625605540.png)](https://r-charts.com/correlation/scatter-plot-ellipses-ggplot2/)
+
+The main element I was interested in borrowing from this scatterplot with confidence ellipses (Figure 3) is the use of `stat_ellipse` to showcase group clustering in 2D space. I recognize this as an efficient approach that could be adapted for my energy-danceability plot as an alternative or complement to `geom_density_2d`; however, I recognize the need to test for the appropriate amount of scatter to determine whether a contour or scatterplot is most appropriate for this question. I also found the fill and color pairing to be effective in creating a clean group distinction without being too visually overwhelming.
+
+## Hand drawn drafted visualizations
+
+![](images/infographic_draft.png)
+
+## Recreating hand drawn visualizations
 
 The following visualizations were created to observe trends in several components that may contribute to the popularity of Spotify hits such as: emotional enjoyment, certain combinations of energetic and danceability of tracks, and popular genres.
 
-#### Are hit songs happier?
+### Are hit songs emotionally different from non-hits?
 
 ```{r}
-# Create a summary table for distribution of valence score based on popularity 
+# Create a summary table for distribution of valence score 
+# based on popularity 
 valence_dist <- spotify_clean %>%
   select(popularity_group, valence) %>%
   distinct()
@@ -79,146 +120,82 @@ valence_dist %>%
   ggplot(aes(x = popularity_group, y = valence, fill = popularity_group)) +
   geom_violin(trim = T, alpha = 0.3) + 
   geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) +
-  # scale_fill_manual(values = c("low" = "#a8dadc", "high" = "#e63946")) +
   labs(
-    title = "Are Hit Songs Happier?",
+    title = "Are Hit Songs Emotionally Different from Non-Hits? ",
     x = "Popularity Group",
     y = "Valence (Happiness Score)"
   ) +
   guides(fill = "none") +
-  theme_minimal() + # Spotify green + dark background
-scale_fill_manual(values = c("low" = "#535353", "high" = "#1DB954"))+ 
-  annotate("text", x = 1.8, y = .5,
-  label = "Hit songs skew\nslightly happier -->",
-  color = "#1DB954", size = 4, fontface = "italic", hjust = 1)
+  theme_minimal() + 
+  # Set group fill based on Spotify theme colors
+scale_fill_manual(values = c("low" = "#535353", "high" = "#1DB954")) 
 ```
 
-```{r}
-# Stacked histograms for valence scores based on popularity group
-valence_dist %>% 
-  ggplot(aes(x = valence, fill = popularity_group)) +
-  geom_histogram(bins = 30, col = "black", alpha = .4) +
-  #facet_wrap(~ popularity_group) +
-  labs(
-    title = "Valence Distribution by Popularity Group",
-    x = "Valence",
-    y = "Count"
-  ) + theme_igray()
-
-# Faceted histograms for valence scores based on popularity group
-valence_dist %>% 
-  ggplot(aes(x = valence, fill = popularity_group)) +
-  geom_histogram(bins = 30, col = "black", alpha = .4) +
-  facet_wrap(~ popularity_group) + guides(fill = "none") + 
-  labs(
-    title = "Valence Distribution by Popularity Group",
-    x = "Valence",
-    y = "Count"
-  ) + theme_igray() 
-```
-
-#### Do popular songs cluster around certain energy-danceability combinations?
+### Do hit songs have a signature sound based on energy and dancability scoring (is there a certain "vibe")?
 
 ```{r}
-ggplot(spotify_clean, aes(x = energy, y = danceability, color = popularity_group)) +
-  geom_point(alpha = 0.3, size = 1.2) +
-  geom_density_2d(aes(linetype = popularity_group), linewidth = 0.6) +
- # scale_color_manual(values = cols) +
-  labs(
-    title = "Energy vs. Danceability by Popularity",
-    x = "Energy", y = "Danceability",
-    color = "Group", linetype = "Group"
-  ) +
-  theme_minimal()
-
-```
-
-```{r}
-
-
-# Create a subset with only the energy and daceability score
+# Create subset for variables of interest
 energy_dance_df <- spotify_clean %>%
   select(energy, danceability, popularity_group)
 
-# Scatter plot of energy score against danceability of a track based on pop group
-energy_dance_df %>% 
+energy_dance_df %>%
   ggplot(aes(x = energy, y = danceability, color = popularity_group)) +
-  geom_point(alpha = 0.4) + 
+  
+  # Use contour plot with numerous bins
+  geom_density_2d(linewidth = 0.8, bins = 10) +
+  
+  # Set popularity bin fill to Spotify theme
+  scale_color_manual(values = c("low" = "#535353", "high" = "#1DB954"),
+                     labels = c("low" = "Low Popularity", "high" = "High Popularity")) +
   labs(
-    title = "Energy vs Danceability by Popularity Group",
-    x = "Energy",
-    y = "Danceability",
-    color = "Popularity Group"
+    title = "Do Hit Songs Cluster Around Certain Vibes?",
+    subtitle = "Density contours indicate where songs concentrate in energy-danceability space.",
+    x = "Energy", y = "Danceability", color = NULL
   ) +
-  theme_igray()
-
-# Faceted scatter plot of energy-dancebility clustering based on popularity
-energy_dance_df %>% 
-  ggplot(aes(x = energy, y = danceability, color = popularity_group)) +
-  geom_point(alpha = 0.4) + 
-  facet_wrap(~popularity_group) + 
-  guides(color = "none") + 
-  labs(
-    title = "Energy vs Danceability by Popularity Group",
-    x = "Energy",
-    y = "Danceability",
-    color = "Popularity Group"
-  ) +
-  theme_igray()
+  theme_minimal() + 
+  theme(
+    plot.title = element_text(size = 14),
+    plot.subtitle = element_text(color = "grey50", size = 10),
+    legend.position = "bottom"
+  )
 ```
 
-```{r, fig.width=8, fig.height= 6}
-# Faceted density plot of energy-dancebility clustering based on popularity
-energy_dance_df %>% 
-  ggplot(aes(x = energy, y = danceability)) +
-  stat_density_2d() +
-  facet_wrap(~popularity_group) +
-  labs(
-    title = "Energy-Danceability Clusters by Popularity Group",
-    x = "Energy",
-    y = "Danceability"
-  ) +
-  theme_igray()
-```
-
-#### How does genre popularity shift between low and high popularity songs?
+### Which genres are most likely to produce a hit?
 
 ```{r}
+# For now, only observe differences for most popular genres
+# Lowest popularity comparison possible for later analyses
+###________________________________________________________
+
+# Use ggimage for icons
 library(ggimage)
-# genre_icons <- c(
-#   "pop" = "♪",
-#   "rock" = "♫",
-#   "hip-hop" = "♩",
-#   "latin" = "♪",
-#   "electronic" = "♫",
-#   "arabic" = "♩",
-#   "ambient" = "♪",
-#   "brazilian" = "♫",
-#   "world" = "♩",
-#   "lofi" = "♪"
-# )
 
-
-# subset
+# Create subset to calculate % of highly popular songs within each genre
 genre_pct <- spotify_clean %>%
+  # Count # of songs in each genre by pop group
   count(playlist_genre, popularity_group) %>%
+  # Group by genre 
   group_by(playlist_genre) %>%
+  # Calculate % of songs in each popularity group within genre
   mutate(pct = n / sum(n) * 100) %>%
   ungroup() %>%
-  filter(popularity_group == "high")  # keep only high popularity %
+  # Keep only high popularity group
+  filter(popularity_group == "high")
 
-# Filter to genres with enough songs to be meaningful
+# Filter to top 10 genres
 top_genres <- spotify_clean %>%
   count(playlist_genre) %>%
-  filter(n >= 50) %>%
+  # Cut top 10 in count "n"
   slice_max(n, n = 10) %>%
-  pull(playlist_genre)
+  # Pull genre column only and return as vector
+  pull(playlist_genre) 
 
-genre_pct_filtered <- genre_pct %>%
+# Identify shared genres in top 10
+genre_pct <- genre_pct %>%
   filter(playlist_genre %in% top_genres)
 
-# Step 2: add icon column to your data
-genre_pct_filtered <- genre_pct_filtered %>%
+# Add icon column 
+genre_pct <- genre_pct %>%
   mutate(icon_path = case_when(
     playlist_genre == "pop"       ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-pop-music-24.png",
     playlist_genre == "rock"      ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-rock-music-50.png",
@@ -229,54 +206,55 @@ genre_pct_filtered <- genre_pct_filtered %>%
     playlist_genre == "ambient"   ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-contrast-64.png",
     playlist_genre == "brazilian" ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-dancing-64.png",
     playlist_genre == "world"     ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-world-48.png",
-    playlist_genre == "lofi"      ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-ko-fi-48.png"
+    playlist_genre == "lofi"      ~ "~/MEDS/eds-240/eds240-infographic/icons/icons8-cassette-50.png"
   ))
 
 
-# Step 3: replace geom_point with geom_text
-genre_pct_filtered %>%
+# Create lollipop chart with associated icons
+genre_pct %>%
+  # Order in descending order based on pct
   ggplot(aes(x = pct, y = reorder(playlist_genre, pct))) +
-  geom_segment(aes(x = 0, xend = pct, yend = playlist_genre),
-               color = "grey70", linewidth = 0.8) +
-  geom_image(aes(image = icon_path), size = 0.08, asp = 10/11) +  # adjust size as needed
+  # Draw line segment from 0 to pct of each genre
+  geom_segment(aes(x = 0, 
+                   xend = pct, 
+                   yend = playlist_genre),
+               color = "grey70", 
+               linewidth = 0.5) +
+  # Call icons as an image from file path
+  geom_image(aes(image = icon_path), size = 0.05, asp = 10/6) +
+  # Add pct as % amount adjusted to 3 units to right of icon 
+  # Round pct to nearest hundreth
+  geom_text(aes(label = paste0(round(pct, 1), "%"), x = pct + 3),
+          hjust = 0, size = 3.5, color = "grey30") +
+  # Add threshold line
   geom_vline(xintercept = 50, linetype = "dashed",
-             color = "grey40", linewidth = 0.5) +
-  annotate("text", x = 51, y = 10.5,
-           label = "50% threshold", color = "grey40", size = 3, hjust = 0) +
+             color = "darkred", linewidth = 0.5) +
+  # Add % sign to each x label
   scale_x_continuous(labels = scales::percent_format(scale = 1),
                      limits = c(0, 100)) +
   labs(
     title = "Which Genres Are Most Likely to Produce a Hit?",
-    subtitle = "% of each genre's songs that are high popularity",
-    x = "% of Genre's Songs That Are Hits",
-    y = NULL
+    subtitle = "A pop song is most likely to produce a hit based on track popularity scoring.",
+    x = "% of a genre's songs that are popular",
+    y = NULL # No y axis label
   ) +
   theme_minimal() +
+  # Adjust axis elements (size, remove y grid)
   theme(
-    plot.title = element_text(size = 16, face = "bold"),
+    plot.title = element_text(size = 14),
     plot.subtitle = element_text(color = "grey50", size = 11),
     panel.grid.major.y = element_blank()
   )
 ```
 
-### **EDA Questions**
+### **Draft Visualization Questions**
 
 **After completing the above steps, answer the following questions:**
 
--   **1.** What have you learned about your data? Have any potentially interesting patterns emerged? Point to specific visualizations that you created as you describe your findings.
+**1.** What are the key insights you want your infographic to communicate, and how will your design choices help highlight and support those messages?
 
-Based on exploratory data visualization, there is no visually significant difference in the median valence (emotion happiness) scores across different popularity groups. As observed in the overlayed violin and box plot, most hit songs do not appear to be necessarily happier than less popular ones, as the median score remains approximately the same at about 0.5 regardless of success. This may suggest that "highly popular" songs on Spotify feature the same diverse mix of happy and "sad" tones as in any of the other popularity groups, indicating that a song's emotional mood does not determine its success. The faceted and stacked histograms reveal that valence scores are widely distributed across the entire emotional range for all popularity groups with the highest frequency of songs clustering around the neutral scoring of 0.4-0.5. Because the distribution shape is rather consistent across the high, mid, and lower popularity groups, it is visually clear that a track's specific happiness level does not dictate/impact its commercial success on Spotify (ex. streaming success).
+**2.** What challenges did you encounter or anticipate encountering as you continue to build / iterate on your visualizations in R? If you struggled with mocking up any of your three visualizations, describe those challenges here.
 
-The visual analysis of energy and danceability reveals that while tracks on Spotify lean towards high intensity and rhythmic patterns, high popularity hits are much more concentrated within a specific, tighter range. As indicated in the scatterplots and density plot, the most successful songs cluster tightly around a score of 0.7-0.8 for both metrics, suggesting there may be a standardized formula for commercial appeal in the music industry that favors energetic and danceable tracks. In contrast, low-popular tracks were more scattered and occupied a wider variety of energy and danceability combinations; less popular hits had low energetic scores of 0 and generally low danceability. Overall, there is a clear weak positive correlation between energy and danceability across all popularity groups; however, as popularity increases, the diversity of energetic-danceability pairs decrease in favor of a predictable high-energy rhythm.
+**3.** What ggplot extension tools / packages do you need to use to build your visualizations? Are there any that we haven’t covered in class that you’ll be learning how to use for your visualizations?
 
--   **2.** In [FPM #1](https://eds-240-data-viz.github.io/course-materials/assignments/FPM1.html), you outlined some questions that you wanted to answer using these data. Have you made any strides towards answering those questions? If yes, how so? If no, what next steps do you need to take (e.g. I need to create X plot type, I still need to track down Y data, I need to restructure existing data so that you can visualize it in Z ways, etc.)? Have any new questions emerged?
-
-The exploratory data visualizations in this document provide initial insight into whether popular songs cluster around specific energy–danceability combinations and which genres are most prevalent among Spotify’s highest-popularity hits. The scatterplot and density plot indicate that highly popular songs tend to be both energetic and highly danceable. Additionally, pop is the most common genre within the high-popularity group, while emotional valence does not appear to play a significant role in distinguishing the most popular songs from other hits.
-
-These findings motivated two follow up questions: (1) How does genre composition differ across popularity groups and which genres dominate Spotify hits overall? & (2) Which artists tend to dominate tracks within each popularity group? To address these questions, `spotify_clean` must be reorganized and examine genre distributions using the `playlist_genre` variable, as well as assessing artist representation across popularity categories.
-
--   **3.** What challenges do you foresee encountering with your data? These can be data wrangling and / or visualization challenges.
-
-There may be challenges with identifying the most dominant artist across popularity groups as artists can appear multiple times within the same track (ex. featured artists), which may lead to double counting of the same artist if not handled correctly. Additionally, genre classification may present challenges because songs are assigned to broad playlist genres that can oversimplify musical style and hide subgenre differences.
-
-Overplotting in scatterplots (ex. relating two metrics for track success) can make it difficult to distinguish dense clouds/regions of points, particularly when examining large numbers of tracks. Choosing appropriate bin widths for histograms or smoothing parameters for density plots may also affect the apparent patterns in the data. Comparing genre distributions across popularity groups may require careful normalization (ex. utilizing proportions rather than actual observations) to ensure fair comparisons when there are significant differences in group sizes.
+**4.** What feedback do you need from the instructional team and / or your peers to ensure that your intended message and key insights are clear?

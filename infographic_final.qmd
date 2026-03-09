@@ -7,7 +7,7 @@ execute:
   warning: false
   message: false
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 The purpose of this document is to finalize visuals for this infographic based on the Spotify hits dataset obtained from Kaggle and organized by Solomon Ameh.
@@ -32,7 +32,9 @@ I plan to implement several elements of this feedback. For example, I will updat
 
 **3. Identify any areas where you decided *not* to follow feedback and explain why (e.g. “it didn’t align with my main message” or “I found a different design solution”).**
 
-4\. Address which (if any) of the [ten design elements](https://eds-240-data-viz.github.io/course-materials/assignments/final-project.html#partI) you *do not* plan to implement (rememeber, not all ten will necessarily apply to your project, and that’s okay!).
+I ended up changing my first graph (violin-boxplot) to a correlogram (heatmap). I agree that violin and boxplots may be difficult to interpret, so I opted for a heatmap as a more visually intuitive way to associate numeric metrics (ie.
+
+**4. Address which (if any) of the [ten design elements](https://eds-240-data-viz.github.io/course-materials/assignments/final-project.html#partI) you *do not* plan to implement (remember, not all ten will necessarily apply to your project, and that’s okay!).**
 
 ### **Import & Wrangle Data**
 
@@ -71,12 +73,12 @@ spotify_clean <- spotify_clean %>%
     levels = c("low", "high")
   ))
 
-# Filtered dataset for charts (excludes problematic genres)
-spotify_clean_filtered <- spotify_clean %>%
- # filter(!playlist_genre %in% c("gaming", "r&b", "punk")) %>%
-  group_by(playlist_genre) %>%
-  filter(n() >= 100) %>%
-  ungroup()
+# # Filtered dataset for charts (excludes problematic genres)
+# spotify_clean_filtered <- spotify_clean %>%
+#  # filter(!playlist_genre %in% c("gaming", "r&b", "punk")) %>%
+#   group_by(playlist_genre) %>%
+#   filter(n() >= 100) %>%
+#   ungroup()
 
 
 
@@ -161,55 +163,38 @@ The following visualizations were created to observe trends in several component
 ```{r}
 # Create a summary table for distribution of valence score 
 # based on popularity 
-valence_dist <- spotify_clean %>%
-  select(popularity_group, valence) %>%
-  distinct()
+# valence_dist <- spotify_clean %>%
+#   select(popularity_group, valence) %>%
+#   distinct()
 ```
 
-```{r, fig.width= 10, fig.height= 5}
-# Violin and boxplot overlaid to visualize distribution
-# valence_dist %>%
-#   ggplot(aes(x = popularity_group, y = valence, fill = popularity_group)) +
-#   geom_violin(trim = T, alpha = 0.3) + 
-#   geom_boxplot(width = 0.1, fill = "white", outlier.shape = NA) +
-#   labs(
-#     title = "Are Hit Songs Emotionally Different from Non-Hits? ",
-#     x = "Popularity Group",
-#     y = "Valence (Happiness Score)"
-#   ) +
-#   guides(fill = "none") +
-#   theme_minimal() + 
-#   # Set group fill based on Spotify theme colors
-# scale_fill_manual(values = c("low" = "#535353", "high" = "#1DB954")) 
-
-library(corrgram)
-
-spotify_clean %>%
-  filter(popularity_group == "high") %>%
-  select(valence, energy, danceability,
-         acousticness, instrumentalness,
-         speechiness, loudness) %>%
-  corrgram(
-    order = TRUE,
-    lower.panel = panel.shade,
-    upper.panel = panel.cor,
-    diag.panel = panel.density,
-    col.regions = colorRampPalette(c("#535353", "white", "#1DB954")),
-    main = "How Are Audio Features Related in Hit Songs?"
-  )
+```{r, fig.width = 10, fig.height = 8}
+# spotify_clean %>%
+#   filter(popularity_group == "high") %>%
+#   select(valence, energy, danceability,
+#          acousticness, instrumentalness,
+#          speechiness, loudness) %>%
+#   corrgram(
+#     order = TRUE,
+#     lower.panel = panel.shade,
+#     upper.panel = panel.cor,
+#     diag.panel = panel.density,
+#     col.regions = colorRampPalette(c("#535353", "white", "#1DB954")),
+#     main = "How Are Audio Features Related in Hit Songs?"
+#   )
 
 ## launchpad 
 library(tidyverse)
 
 # Variable labels with music notes
 music_labels <- c(
-  valence = "♪ valence",
-  energy = "♪ energy", 
-  danceability = "♪ danceability",
-  acousticness = "♪ acousticness",
-  instrumentalness = "♪ instrumentalness",
-  speechiness = "♪ speechiness",
-  loudness = "♪ loudness"
+  valence = "♪ Valence",
+  energy = "♪ Energy", 
+  danceability = "♪ Danceability",
+  acousticness = "♪ Acousticness",
+  instrumentalness = "♪ Instrumentalness",
+  speechiness = "♪ Speechiness",
+  loudness = "♪ Loudness"
 )
 
 var_order <- c("valence", "energy", "danceability",
@@ -246,15 +231,15 @@ spotify_clean %>%
   ) +
   theme_minimal() +
   theme(
-    plot.background = element_rect(fill = "#191414", color = NA),
-    plot.caption = element_text(size = 7, color = "white"),
-    panel.background = element_rect(fill = "#191414", color = NA),
-    plot.title = element_text(size = 14, color = "white", face = "bold"),
+    plot.background = element_rect(fill = "#2b2b2b", color = NA),
+   # plot.caption = element_text(size = 10, color = "white"),
+    panel.background = element_rect(fill = "#2b2b2b", color = NA),
+    plot.title = element_text(size = 20, color = "white", face = "bold"),
     plot.subtitle = element_text(color = "#1DB954", size = 10),
     axis.text.x = element_text(angle = 45, hjust = 1, 
-                                color = "white", size = 8),
-    axis.text.y = element_text(color = "white", size = 8),
-    legend.background = element_rect(fill = "#191414"),
+                                color = "white", size = 10, face),
+    axis.text.y = element_text(color = "white", size = 10),
+    legend.background = element_rect(fill = "#2b2b2b"),
     legend.text = element_text(color = "white"),
     legend.title = element_text(color = "white"),
     panel.grid = element_blank()

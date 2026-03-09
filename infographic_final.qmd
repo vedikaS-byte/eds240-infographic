@@ -12,7 +12,7 @@ editor_options:
 
 The purpose of this document is to finalize visuals for this infographic based on the Spotify hits dataset obtained from Kaggle and organized by Solomon Ameh.
 
-## Reflection questions 
+## Reflection questions
 
 **1.** Summarize the key feedback points you received on your FPM #3 draft visualizations.
 
@@ -169,23 +169,6 @@ The following visualizations were created to observe trends in several component
 ```
 
 ```{r, fig.width = 10, fig.height = 8}
-# spotify_clean %>%
-#   filter(popularity_group == "high") %>%
-#   select(valence, energy, danceability,
-#          acousticness, instrumentalness,
-#          speechiness, loudness) %>%
-#   corrgram(
-#     order = TRUE,
-#     lower.panel = panel.shade,
-#     upper.panel = panel.cor,
-#     diag.panel = panel.density,
-#     col.regions = colorRampPalette(c("#535353", "white", "#1DB954")),
-#     main = "How Are Audio Features Related in Hit Songs?"
-#   )
-
-## launchpad 
-library(tidyverse)
-
 # Variable labels with music notes
 music_labels <- c(
   valence = "♪ Valence",
@@ -216,7 +199,7 @@ spotify_clean %>%
   filter(as.numeric(var1) > as.numeric(var2)) %>%
   ggplot(aes(x = var2, y = var1, fill = corr)) +
   geom_tile(color = "#191414", linewidth = 1.5) +
-  geom_text(aes(label = corr), size = 3.5, 
+  geom_text(aes(label = corr), size = 7, 
             color = "black", fontface = "bold") +
   scale_fill_gradient2(
     low = "#535353", mid = "white", high = "#1DB954",
@@ -226,22 +209,23 @@ spotify_clean %>%
   scale_y_discrete(labels = music_labels) +
   labs(
     title = "♫ How Are Audio Features Related in Hit Songs?",
-    subtitle = "Energy and loudness are strongly correlated, while instrumentalness weakly relates to other features.",
-    x = NULL, y = NULL, fill = "r", caption = "Data courtesy of Solomon Ameh on Kaggle. Audio features sourced from Spotify's Web API."
+    subtitle = "Energy and loudness are strongly correlated, while instrumentalness and speechiness weakly relate to other features.",
+    x = NULL, y = NULL, fill = "Correlation Coefficient (r)" 
+    #caption = "Data courtesy of Solomon Ameh on Kaggle. )Audio features sourced from Spotify's Web API."
   ) +
   theme_minimal() +
   theme(
     plot.background = element_rect(fill = "#2b2b2b", color = NA),
    # plot.caption = element_text(size = 10, color = "white"),
     panel.background = element_rect(fill = "#2b2b2b", color = NA),
-    plot.title = element_text(size = 20, color = "white", face = "bold"),
-    plot.subtitle = element_text(color = "#1DB954", size = 10),
+    plot.title = element_text(size = 30, color = "white", face = "bold", family = "Utopia"),
+    plot.subtitle = element_text(color = "#1DB954", size = 15, face = "bold", family = "Glock Grotesk"),
     axis.text.x = element_text(angle = 45, hjust = 1, 
-                                color = "white", size = 10, face),
-    axis.text.y = element_text(color = "white", size = 10),
+                                color = "white", size = 15, face = "bold", family = "Glock Grotesk"),
+    axis.text.y = element_text(color = "white", size = 15, face = "bold", family = "Glock Grotesk"),
     legend.background = element_rect(fill = "#2b2b2b"),
-    legend.text = element_text(color = "white"),
-    legend.title = element_text(color = "white"),
+    legend.text = element_text(color = "white", face = "bold", family = "Glock Grotesk"),
+    legend.title = element_text(color = "white", family = "Glock Grotesk"),
     panel.grid = element_blank()
   ) 
 ```
@@ -253,28 +237,39 @@ spotify_clean %>%
 energy_dance_df <- spotify_clean %>%
   select(energy, danceability, popularity_group)
 
-energy_dance_df %>%
+ energy_dance_df %>%
   ggplot(aes(x = energy, y = danceability, color = popularity_group)) +
 
   # Use contour plot with numerous bins
   geom_density_2d(linewidth = 0.8, bins = 10) +
 
   # Set popularity bin fill to Spotify theme
-  scale_color_manual(values = c("low" = "#535353", "high" = "#1DB954"),
+  scale_color_manual(values = c("low" = "#e6e6e6", "high" = "#1DB954"),
                      labels = c("low" = "Low Popularity", "high" = "High Popularity")) +
   labs(
     title = "Do Hit Songs Cluster Around Certain Vibes?",
-    subtitle = "Density contours indicate where songs concentrate in energy-danceability space.",
+    subtitle = "Density contours indicate where individual songs concentrate in energy-danceability space.",
     x = "Energy", y = "Danceability", color = NULL
   ) +
-  theme_minimal() +
+ theme_minimal() +
   theme(
-    plot.title = element_text(size = 14),
-    plot.subtitle = element_text(color = "grey50", size = 10),
-    legend.position = "bottom"
-  )
-
-## percentage of lyrics and instrumental 
+    plot.background = element_rect(fill = "#2b2b2b", color = NA),
+   # plot.caption = element_text(size = 10, color = "white"),
+    panel.background = element_rect(fill = "#2b2b2b", color = NA),
+    plot.title = element_text(size = 30, color = "white", face = "bold", family = "Utopia"),
+    plot.subtitle = element_text(color = "#1DB954", size = 15, face = "bold", family = "Glock Grotesk"),
+    axis.text.x = element_text(angle = 45, hjust = 1, 
+                                color = "white", size = 15, face = "bold", family = "Glock Grotesk"),
+    axis.text.y = element_text(color = "white", size = 15, face = "bold", family = "Glock Grotesk"),
+    legend.background = element_rect(fill = "#2b2b2b"),
+    legend.text = element_text(color = "white", face = "bold", family = "Glock Grotesk"),
+    legend.title = element_text(color = "white", family = "Glock Grotesk"),
+    panel.grid = element_blank(), 
+   axis.title.x = element_text(color = "white", size = 20, face = "bold"),
+    axis.title.y = element_text(color = "white", size = 20, face = "bold")
+  ) + annotate("text", label= "Some of the least popular songs fall into an additional cluster within the \nambient and wellbeing genres.", x = .6, y =.2, color = "#1DB954", size = 6, 
+               fontface = "bold")
+   # annotate("text", label= "Density contours indicate where individual songs concentrate in energy-danceability space.", x = .15, y =.8, color = "#1DB954", size = 6,
 ```
 
 ### Which genres are most likely to produce a hit?
@@ -370,16 +365,27 @@ genre_pct %>%
                      limits = c(0, 100)) +
   labs(
     title = "Which Genres Are Most Likely to Produce a Hit?",
-    subtitle = "A pop song is most likely to produce a hit based on track popularity scoring.",
+    subtitle = "A pop or rock song is most likely to be a hit in their respective genre based on track popularity scoring.",
     x = "% of a genre's songs that are popular",
     y = NULL
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(size = 14),
-    plot.subtitle = element_text(color = "grey50", size = 11),
-    panel.grid.major.y = element_blank()
-  )
+    plot.background = element_rect(fill = "#2b2b2b", color = NA),
+   # plot.caption = element_text(size = 10, color = "white"),
+    panel.background = element_rect(fill = "#2b2b2b", color = NA),
+    plot.title = element_text(size = 30, color = "white", face = "bold", family = "Utopia"),
+    plot.subtitle = element_text(color = "#1DB954", size = 15, face = "bold", family = "Glock Grotesk"),
+    axis.text.x = element_text(angle = 45, hjust = 1, 
+                                color = "white", size = 15, face = "bold", family = "Glock Grotesk"),
+    axis.text.y = element_text(color = "white", size = 15, face = "bold", family = "Glock Grotesk"),
+    legend.background = element_rect(fill = "#2b2b2b"),
+    legend.text = element_text(color = "white", face = "bold", family = "Glock Grotesk"),
+    legend.title = element_text(color = "white", family = "Glock Grotesk"),
+    panel.grid = element_blank(), 
+   axis.title.x = element_text(color = "white", size = 20, face = "bold"),
+    axis.title.y = element_text(color = "white", size = 20, face = "bold")
+  ) + annotate("text", label= "The least popular songs fall into a separate cluster here within the ambient and wellbeing genres.", x = .5, y =.2)
 # # For now, only observe differences for most popular genres
 # # Lowest popularity comparison possible for later analyses
 # ###________________________________________________________
@@ -493,3 +499,5 @@ To build my visualizations, I primarily use `ggplot2` along with extension tools
 **4.** What feedback do you need from the instructional team and / or your peers to ensure that your intended message and key insights are clear?
 
 I would like feedback on whether my visualizations clearly communicate the intended comparisons between hit and non-hit songs, particularly in terms of energy, danceability, and genre patterns. More specifically, I would like feedback on whether using a density contour plot is an effective way to highlight energy–danceability clusters between the two popularity groups.
+
+![](images/clipboard-1183148375.png)

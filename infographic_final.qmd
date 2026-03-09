@@ -6,15 +6,40 @@ format: pdf
 execute: 
   warning: false
   message: false
+editor_options: 
+  chunk_output_type: inline
 ---
 
-The purpose of this document is to draft proposed visuals for this infographic based on the Spotify hits dataset obtained from Kaggle and organized by Solomon Ameh. Final versions of summarized data and visualizations are subject to change.
+The purpose of this document is to finalize visuals for this infographic based on the Spotify hits dataset obtained from Kaggle and organized by Solomon Ameh.
+
+## Reflection questions 
+
+**1.** Summarize the key feedback points you received on your FPM #3 draft visualizations.
+
+Based on feedback received from FPM #3, my draft visualizations need to include:
+
+-   A consistent theme and font.
+
+-   Remove unnecessary annotations, such as the 50% threshold line in my lollipop chart.
+
+-   Increase font theme.
+
+-   Add annotations when necessary.
+
+**2. Explain which of these suggestions you plan to implement and how.**
+
+I plan to implement several elements of this feedback. For example, I will update the font size for my titles, axis labels, and annotations to ensure legibility. I will also remove unnecessary annotations, such as the percentage labels on my lollipop plot. I will also establish a standard theme, such as a black background with a light grey-dark green palette for discrete categories.
+
+**3. Identify any areas where you decided *not* to follow feedback and explain why (e.g. “it didn’t align with my main message” or “I found a different design solution”).**
+
+4\. Address which (if any) of the [ten design elements](https://eds-240-data-viz.github.io/course-materials/assignments/final-project.html#partI) you *do not* plan to implement (rememeber, not all ten will necessarily apply to your project, and that’s okay!).
 
 ### **Import & Wrangle Data**
 
 Here, the necessary packages are loaded, and the Spotify dataset is read from the local directory.
 
 ```{r}
+#| message: false
 library(tidyverse)
 library(ggthemes)
 ```
@@ -55,23 +80,28 @@ spotify_clean_filtered <- spotify_clean %>%
 
 
 
-# set.seed(123)
-# 
-# n <- nrow(high_popular)  # 1686
-# 
-# low_sample <- low_popular %>% slice_sample(n = n)
-# 
-# spotify_clean <- bind_rows(
-#   high_popular %>% mutate(popularity_group = "high"),
-#   low_sample   %>% mutate(popularity_group = "low")
-# ) %>%
-#   select(track_id, track_name, playlist_genre,
-#          track_popularity, popularity_group,
-#          valence, energy, danceability) %>%
-#   distinct() %>%
-#   drop_na() %>%
-#   mutate(popularity_group = factor(popularity_group,
-#                                    levels = c("low", "high")))
+set.seed(123)
+
+n <- nrow(high_popular)  # 1686
+
+low_sample <- low_popular %>% slice_sample(n = n)
+
+spotify_clean <- bind_rows(
+  high_popular %>% mutate(popularity_group = "high"),
+  low_sample   %>% mutate(popularity_group = "low")
+) %>%
+  select(track_id, track_name,
+         playlist_genre, acousticness,
+         track_popularity,
+         valence, energy, danceability, mode, loudness, tempo, speechiness, instrumentalness, liveness)  %>%
+  distinct() %>%
+  drop_na() %>%
+  # mutate(popularity_group = factor(popularity_group,
+  #                                  levels = c("low", "high")))
+  mutate(popularity_group = factor(
+    ifelse(track_popularity > 68, "high", "low"),
+    levels = c("low", "high")
+  ))
 
 # Verify balance
 table(spotify_clean$popularity_group)
@@ -152,23 +182,23 @@ valence_dist <- spotify_clean %>%
 #   # Set group fill based on Spotify theme colors
 # scale_fill_manual(values = c("low" = "#535353", "high" = "#1DB954")) 
 
-# library(corrgram)
-# 
-# spotify_clean %>%
-#   filter(popularity_group == "high") %>%
-#   select(valence, energy, danceability,
-#          acousticness, instrumentalness,
-#          speechiness, loudness) %>%
-#   corrgram(
-#     order = TRUE,
-#     lower.panel = panel.shade,
-#     upper.panel = panel.cor,
-#     diag.panel = panel.density,
-#     col.regions = colorRampPalette(c("#535353", "white", "#1DB954")),
-#     main = "How Are Audio Features Related in Hit Songs?"
-#   )
+library(corrgram)
 
+spotify_clean %>%
+  filter(popularity_group == "high") %>%
+  select(valence, energy, danceability,
+         acousticness, instrumentalness,
+         speechiness, loudness) %>%
+  corrgram(
+    order = TRUE,
+    lower.panel = panel.shade,
+    upper.panel = panel.cor,
+    diag.panel = panel.density,
+    col.regions = colorRampPalette(c("#535353", "white", "#1DB954")),
+    main = "How Are Audio Features Related in Hit Songs?"
+  )
 
+## launchpad 
 library(tidyverse)
 
 # Variable labels with music notes
@@ -258,40 +288,42 @@ energy_dance_df %>%
     plot.subtitle = element_text(color = "grey50", size = 10),
     legend.position = "bottom"
   )
+
+## percentage of lyrics and instrumental 
 ```
 
 ### Which genres are most likely to produce a hit?
 
 ```{r}
-library(kableExtra)
-
-genre_splits <- bind_rows(
-  low_popular %>% mutate(popularity_group = "low"),
-  high_popular %>% mutate(popularity_group = "high")
-) %>%
-  count(playlist_genre, popularity_group) %>%
-  pivot_wider(names_from = popularity_group,
-              values_from = n,
-              values_fill = 0) %>%
-  mutate(
-    total = low + high,
-    pct_high = round(high / total * 100, 1),
-    excluded = ifelse(playlist_genre %in% c("gaming", "r&b", "punk"),
-                      "Yes", "No")
-  ) %>%
-  arrange(desc(total))
-
-genre_splits %>%
-  kable(col.names = c("Genre", "Low", "High", "Total", "% High", "Excluded"),
-        caption = "Genre splits in raw data. Genres with severe high/low 
-        imbalance or insufficient observations were excluded from analysis.",
-        align = c("l", "r", "r", "r", "r", "c")) %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
-                full_width = FALSE) %>%
-  row_spec(which(genre_splits$excluded == "Yes"),
-           background = "#ffe6e6") %>%  # red for excluded
-  row_spec(which(genre_splits$total < 100 & genre_splits$excluded == "No"),
-           background = "#fff3cd")       # yellow for low count warning
+# library(kableExtra)
+# 
+# genre_splits <- bind_rows(
+#   low_popular %>% mutate(popularity_group = "low"),
+#   high_popular %>% mutate(popularity_group = "high")
+# ) %>%
+#   count(playlist_genre, popularity_group) %>%
+#   pivot_wider(names_from = popularity_group,
+#               values_from = n,
+#               values_fill = 0) %>%
+#   mutate(
+#     total = low + high,
+#     pct_high = round(high / total * 100, 1),
+#     excluded = ifelse(playlist_genre %in% c("gaming", "r&b", "punk"),
+#                       "Yes", "No")
+#   ) %>%
+#   arrange(desc(total))
+# 
+# genre_splits %>%
+#   kable(col.names = c("Genre", "Low", "High", "Total", "% High", "Excluded"),
+#         caption = "Genre splits in raw data. Genres with severe high/low 
+#         imbalance or insufficient observations were excluded from analysis.",
+#         align = c("l", "r", "r", "r", "r", "c")) %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+#                 full_width = FALSE) %>%
+#   row_spec(which(genre_splits$excluded == "Yes"),
+#            background = "#ffe6e6") %>%  # red for excluded
+#   row_spec(which(genre_splits$total < 100 & genre_splits$excluded == "No"),
+#            background = "#fff3cd")       # yellow for low count warning
 ```
 
 ```{r}

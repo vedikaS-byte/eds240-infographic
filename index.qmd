@@ -36,7 +36,7 @@ The visualizations in this infographic draw on the [Spotify Music Dataset](https
 
 The finalized infographic is included here. The construction of each graph is included in individual code chunks below and can be referenced in needed.
 
-*\*Note: I am in the process of updating the icons derived from Canvas to be included in my final lollipop plot. Additionally, I was having issues with annotation placement and will resolve this.*
+*\*Note: I am in the process of updating the icons derived from Canvas to be included in my final lollipop plot. Additionally, I will add my annotations with the correct placement.*
 
 ![](images/clipboard-2523959394.png)
 

@@ -4,24 +4,38 @@
 
 This repository contains the data and R code used to create an infographic composed of multiple visualizations that will illustrate different aspects of Spotify hits. The visual analysis draws on publicly available data from the [*Spotify Music Dataset*](https://www.kaggle.com/datasets/solomonameh/spotify-music-dataset) by Solomon Ameh, accessed via Kaggle.
 
-Questions currently brainstormed for the analysis include:
+The overarching question in mind is: What makes a song a Spotify hit? This will be addressed with three subquestions:
 
--   Are hit songs happier (based on valence)?
-- 
--   Do popular songs cluster around certain energy-danceability combinations?
+-   Are hits emotionally different from non-hits?
 
--   Which genres dominate Spotify hits? Essentially, how does genre composition differ between popular and less popular tracks?
+-   Do hit songs have a signature sound based on certain energy-danceability combinations?
 
--   Who dominates Spotify’s most popular songs?
+-   Which genres are most likely to produce a hit?
 
-    -   Who dominates Spotify’s most popular songs compared to less popular tracks?
-
-## Structure
+## Reposity Structure and Contents
 
 The file structure is provided below:
 
 ```         
 ├── eds240-infographic.Rproj
+├── LICENSE
+└── README.md
+├── initial_data_exploration.qmd
+├── data
+│   ├── high_popularity_spotify_data.csv
+│   └── low_popularity_spotify_data.csv
+├── drafting_viz.qmd
+├── exploration.qmd
+├── exploration.html
+├── fonts
+│   ├── Bugaki Oblique.ttf
+│   ├── Bugaki.ttf
+│   ├── GlockGrotesque-Medium.ttf
+│   └── readme.txt
+├── icons
+├── images
+├── index.html
+├── index.qmd
 ├── initial_data_exploration.qmd
 ├── LICENSE
 └── README.md
@@ -30,3 +44,13 @@ The file structure is provided below:
 ## Data Access
 
 The visual analysis draws on publicly available data from the [*Spotify Music Dataset*](https://www.kaggle.com/datasets/solomonameh/spotify-music-dataset) by Solomon Ameh, accessed via Kaggle.
+
+## Contributors
+
+This repository is maintained by Vedika Shirtekar as part of the Master of Environmental Data Science program at UC Santa Barbara. This work was completed for the **EDS 240: Data Visualization and Communication** course at the Bren School of Environmental Science and Management, which provided data access and documentation practices, as well as assignment instructions.
+
+## References 
+
+[1]
+
+[2]
